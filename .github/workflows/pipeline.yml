@@ -121,8 +121,8 @@ jobs:
         run: |
           make infra-plan && \
           S3_PUBLIC_ENDPOINT_URL=`make infra-print-outputs EXTRA_ARGS=s3_bucket_url | cut -f2 -d'"'` && \
-          echo "S3_PUBLIC_ENDPOINT_URL = ${S3_PUBLIC_ENDPOINT_URL}" && \
-          echo "::set-output name=S3_PUBLIC_ENDPOINT_URL::${S3_PUBLIC_ENDPOINT_URL}"
+          echo "S3_PUBLIC_ENDPOINT_URL = $S3_PUBLIC_ENDPOINT_URL" && \
+          echo "::set-output name=S3_PUBLIC_ENDPOINT_URL::$S3_PUBLIC_ENDPOINT_URL"
       - name: Upload Terraform Plan As Artifact
         uses: actions/upload-artifact@v3
         with:

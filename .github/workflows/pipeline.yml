@@ -181,7 +181,7 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets[env.DEPLOY_AWS_SECRET_ACCESS_KEY_NAME] }}
         run: |
           make infra-apply
-          export PUBLIC_ENDPOINT_URL=$(make infra-print-outputs EXTRA_ARGS=s3_bucket_url)
+          export PUBLIC_ENDPOINT_URL="http://$(make infra-print-outputs EXTRA_ARGS=s3_bucket_url)"
           echo "PUBLIC_ENDPOINT_URL = ${PUBLIC_ENDPOINT_URL}"
           echo "::set-output name=PUBLIC_ENDPOINT_URL::${PUBLIC_ENDPOINT_URL}"
       - name: Test Deployment

@@ -175,8 +175,16 @@ jobs:
         run: |
           make infra-init
       - name: Infra Apply
+        id: infra-apply
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets[env.DEPLOY_AWS_ACCESS_KEY_ID_NAME] }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets[env.DEPLOY_AWS_SECRET_ACCESS_KEY_NAME] }}
         run: |
           make infra-apply
+          export PUBLIC_ENDPOINT_URL=$(make infra-print-outputs EXTRA_ARGS=s3_bucket_url)
+          echo "PUBLIC_ENDPOINT_URL = ${PUBLIC_ENDPOINT_URL}"
+          echo "::set-output name=PUBLIC_ENDPOINT_URL::${PUBLIC_ENDPOINT_URL}"
+      - name: Test Deployment
+        uses: wei/curl@v1
+        with:
+          args: ${{ steps.infra-apply.outputs.PUBLIC_ENDPOINT_URL }}

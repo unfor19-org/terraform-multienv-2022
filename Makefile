@@ -228,8 +228,8 @@ ifeq (${MAKECMDGOALS},ci-set-outputs)
 PUBLIC_ENDPOINT_URL:="$(shell $(MAKE) infra-print-outputs EXTRA_ARGS=s3_bucket_url)"
 endif
 ci-set-outputs: validate-PUBLIC_ENDPOINT_URL
-	@echo "PUBLIC_ENDPOINT_URL = $${PUBLIC_ENDPOINT_URL}" && \
-	echo ::set-output name=PUBLIC_ENDPOINT_URL::$${PUBLIC_ENDPOINT_URL}
+	echo "PUBLIC_ENDPOINT_URL = $${PUBLIC_ENDPOINT_URL}"
+	echo ::set-output name=s3_public_endpoint_url::$${PUBLIC_ENDPOINT_URL}
 
 docker-build-builder: ## Docker build Builder image
 	docker build --build-arg TERRAFORM_VERSION=${TERRAFORM_VERSION} -t tfmultienv:builder .

@@ -32,10 +32,10 @@ resource "aws_s3_bucket_website_configuration" "app" {
 
 resource "aws_s3_object" "app" {
   bucket = aws_s3_bucket.app.id
-  acl          = "public-read"
-  key          = "index.html"
+  acl    = "public-read"
+  key    = "index.html"
   # &#128075; - hand wave in HTML
-  content      = "<h1>Hi there &#128075; from ${var.app_name}, and welcome to the ${var.environment} environment</h1>"
+  content      = "<h1>Hi there &#128075; ! From ${var.app_name}, and welcome to the ${var.environment} environment</h1>"
   content_type = "text/html"
-  tags   = local.tags
+  tags         = local.tags
 }

@@ -2,14 +2,6 @@ name: Pipeline
 
 on:
   push: # includes merge event; deploys only on live branches (dev, stg, prd)
-  pull_request: # plan only
-    types:
-      - opened
-      - reopened
-    branches:
-      - dev
-      - stg
-      - prd
 
 env:
   ### ---------------------------------------------------------------

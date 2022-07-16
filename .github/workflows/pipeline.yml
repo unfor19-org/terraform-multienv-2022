@@ -1,7 +1,7 @@
 name: Pipeline
 
 on:
-  push: # includes merge event; deploys only on live branches (dev, stg, prd)
+  push: # includes merge event, deploys only on live branches (dev, stg, prd)
   pull_request:
     types:
       - opened

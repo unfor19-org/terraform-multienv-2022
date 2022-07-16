@@ -56,29 +56,29 @@ TF_VAR_environment:=${STAGE}
 ifneq (${CI},true)
 # Local - Requirement - Copy the "terraform" binary to "/usr/bin/local/terraform1.2.3"
 # Enables support for running multiple Terraform versions on the same machine
-TERRAFORM_BINARY=terraform${TERRAFORM_VERSION}
+TERRAFORM_BINARY:=terraform${TERRAFORM_VERSION}
 else
 # CI=true
 # In CI, there's only one Terraform version
-TERRAFORM_BINARY=terraform
+TERRAFORM_BINARY:=terraform
 endif
 
 
 # Variables that depend on git
 ifndef GIT_BRANCH
-GIT_BRANCH=$(shell git branch --show-current)
+GIT_BRANCH:=$(shell git branch --show-current)
 endif
 
-GIT_BRANCH_SLUG=$(subst /,-,$(GIT_BRANCH))
+GIT_BRANCH_SLUG:=$(subst /,-,$(GIT_BRANCH))
 
 ifndef GIT_BUILD_NUMBER
-GIT_BUILD_NUMBER=99999
+GIT_BUILD_NUMBER:=99999
 endif
 
 ifndef GIT_COMMIT
-GIT_COMMIT=$(shell git rev-parse HEAD)
+GIT_COMMIT:=$(shell git rev-parse HEAD)
 endif
-GIT_SHORT_COMMIT=$(shell ${GIT_COMMIT:0:8})
+GIT_SHORT_COMMIT:=$(shell ${GIT_COMMIT:0:8})
 
 ifeq (${AWS_PROFILE},)
 unexport AWS_PROFILE
@@ -213,5 +213,16 @@ infra-apply: validate validate-TERRAFORM_LIVE_DIR validate-TERRAFORM_PLAN_PATH v
 		exit 44 ; \
 	fi
 
-infra-print-outputs: ## Print infra outputs with terraform
-	@cd $(TERRAFORM_LIVE_DIR) && terraform output ${EXTRA_ARGS}
+infra-print-outputs: validate-TERRAFORM_BINARY ## Print infra outputs with terraform
+	@cd $(TERRAFORM_LIVE_DIR) && ${TERRAFORM_BINARY} output ${EXTRA_ARGS}
+
+##.
+##-- CI --
+
+# A hack to set global env vars when a specific target is executed
+ifeq (${MAKECMDGOALS},ci-set-outputs)
+S3_PUBLIC_ENDPOINT_URL:=$(shell make infra-print-outputs EXTRA_ARGS=s3_bucket_url | cut -f2 -d'"')
+endif
+ci-set-outputs: validate-TERRAFORM_BINARY validate-S3_PUBLIC_ENDPOINT_URL
+	echo "S3_PUBLIC_ENDPOINT_URL = ${S3_PUBLIC_ENDPOINT_URL}" && \
+	echo "::set-output name=S3_PUBLIC_ENDPOINT_URL::${S3_PUBLIC_ENDPOINT_URL}"

@@ -225,11 +225,11 @@ infra-print-outputs: validate-TERRAFORM_BINARY ## Print infra outputs with terra
 
 # A hack to set global env vars when a specific target is executed
 ifeq (${MAKECMDGOALS},ci-set-outputs)
-S3_PUBLIC_ENDPOINT_URL:="$(shell $(MAKE) infra-print-outputs EXTRA_ARGS=s3_bucket_url)"
+PUBLIC_ENDPOINT_URL:="$(shell $(MAKE) infra-print-outputs EXTRA_ARGS=s3_bucket_url)"
 endif
-ci-set-outputs: validate-S3_PUBLIC_ENDPOINT_URL
-	@echo "S3_PUBLIC_ENDPOINT_URL = ${S3_PUBLIC_ENDPOINT_URL}" && \
-	echo ::set-output name=s3_public_endpoint_url::${S3_PUBLIC_ENDPOINT_URL}
+ci-set-outputs: validate-PUBLIC_ENDPOINT_URL
+	@echo "PUBLIC_ENDPOINT_URL = ${PUBLIC_ENDPOINT_URL}" && \
+	echo ::set-output name=PUBLIC_ENDPOINT_URL::${PUBLIC_ENDPOINT_URL}
 
 docker-build-builder: ## Docker build Builder image
 	docker build --build-arg TERRAFORM_VERSION=${TERRAFORM_VERSION} -t tfmultienv:builder .

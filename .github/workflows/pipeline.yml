@@ -107,7 +107,6 @@ jobs:
         run: |
           make infra-prepare-backend
       - name: Infra Init
-        # Terraform init - sets remote S3 backend and installs modules
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets[env.DEPLOY_AWS_ACCESS_KEY_ID_NAME] }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets[env.DEPLOY_AWS_SECRET_ACCESS_KEY_NAME] }}
@@ -168,7 +167,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-${{ env.APP_NAME }}-terraform-${{ env.TERRAFORM_VERSION }}-infra-${{ env.CACHE_TERRAFORM_VERSION }}
       - name: Infra Init
-        # Terraform init - sets remote S3 backend and installs modules
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets[env.DEPLOY_AWS_ACCESS_KEY_ID_NAME] }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets[env.DEPLOY_AWS_SECRET_ACCESS_KEY_NAME] }}

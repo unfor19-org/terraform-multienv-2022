@@ -65,7 +65,7 @@ TERRAFORM_BINARY:=terraform${TERRAFORM_VERSION}
 else
 # CI=true
 # In CI, there's only one Terraform version
-TERRAFORM_BINARY:=terraform
+TERRAFORM_BINARY:=terraform-bin
 endif
 
 

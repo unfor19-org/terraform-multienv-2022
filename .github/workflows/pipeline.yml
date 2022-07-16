@@ -2,6 +2,14 @@ name: Pipeline
 
 on:
   push: # includes merge event; deploys only on live branches (dev, stg, prd)
+  pull_request:
+    types:
+      - opened
+      - reopened
+    branches:
+      - dev
+      - stg
+      - prd
   workflow_dispatch:
     inputs:
       run_id:
@@ -68,7 +76,6 @@ jobs:
     outputs:
       DEPLOYMENT_ENVIRONMENT: ${{ steps.dynamic-outputs.outputs.deployment_environment }}
       CONFIGMAP: ${{ steps.export-configmap.outputs.CONFIGMAP_MAP }}
-      GIT_COMMIT: ${{ steps.dynamic-outputs.outputs.GIT_SHORT_COMMIT }}
       IS_DEPLOY: ${{ steps.dynamic-outputs.outputs.IS_DEPLOY }}
       TERRAFORM_LIVE_DIR: ${{ env.TERRAFORM_LIVE_DIR }}
       APP_NAME: ${{ env.APP_NAME }}

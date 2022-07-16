@@ -118,9 +118,7 @@ jobs:
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets[env.DEPLOY_AWS_ACCESS_KEY_ID_NAME] }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets[env.DEPLOY_AWS_SECRET_ACCESS_KEY_NAME] }}
-        run: |
-          make infra-plan && \
-          make ci-set-outputs
+        run: make infra-plan && make ci-set-outputs
       - name: Upload Terraform Plan As Artifact
         uses: actions/upload-artifact@v3
         with:

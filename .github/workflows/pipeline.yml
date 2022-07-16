@@ -113,26 +113,6 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets[env.DEPLOY_AWS_SECRET_ACCESS_KEY_NAME] }}
         run: |
           make infra-init
-      - name: Infra test outputs
-        id: testoutputs
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets[env.DEPLOY_AWS_ACCESS_KEY_ID_NAME] }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets[env.DEPLOY_AWS_SECRET_ACCESS_KEY_NAME] }}
-        run: |
-          make ci-set-outputs
-      - name: Check the deployed service URL
-        uses: jtalk/url-health-check-action@v2
-        with:
-          # Hardcoded http on purpose - S3 is served only by HTTP
-          url: ${{ steps.testoutputs.outputs.s3_public_endpoint_url }}
-          # Follow redirects, or just report success on 3xx status codes
-          follow-redirect: false # Optional, defaults to "false"
-          # Fail this action after this many failed attempts
-          max-attempts: 3 # Optional, defaults to 1
-          # Delay between retries
-          retry-delay: 5s # Optional, only applicable to max-attempts > 1
-          # Retry all errors, including 404. This option might trigger curl upgrade.
-          retry-all: false # Optional, defaults to "false"
       - name: Infra Plan
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets[env.DEPLOY_AWS_ACCESS_KEY_ID_NAME] }}
@@ -199,14 +179,18 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets[env.DEPLOY_AWS_SECRET_ACCESS_KEY_NAME] }}
         run: |
           make infra-apply
-          export PUBLIC_ENDPOINT_URL="http://$(make infra-print-outputs EXTRA_ARGS=s3_bucket_url)"
-          echo "PUBLIC_ENDPOINT_URL = ${PUBLIC_ENDPOINT_URL}"
-          echo "::set-output name=PUBLIC_ENDPOINT_URL::${PUBLIC_ENDPOINT_URL}"
+      - name: Infra Set CI Outputs
+        id: ci-outputs
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets[env.DEPLOY_AWS_ACCESS_KEY_ID_NAME] }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets[env.DEPLOY_AWS_SECRET_ACCESS_KEY_NAME] }}
+        run: |
+          make ci-set-outputs
       - name: Check the deployed service URL
         uses: jtalk/url-health-check-action@v2
         with:
-          # Check the following URLs one by one sequentially
-          url: ${{ steps.infra-apply.outputs.PUBLIC_ENDPOINT_URL }}
+          # Hardcoded http on purpose - S3 is served only by HTTP
+          url: ${{ steps.ci-outputs.outputs.s3_public_endpoint_url }}
           # Follow redirects, or just report success on 3xx status codes
           follow-redirect: false # Optional, defaults to "false"
           # Fail this action after this many failed attempts

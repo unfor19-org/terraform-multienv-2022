@@ -13,19 +13,19 @@ UNAME:=$(shell uname)
 
 # Windows Git Bash
 ifneq (,$(findstring NT, $(UNAME)))
-_OS=windows
-BASH_PATH=/usr/bin/bash
+_OS:=windows
+BASH_PATH:=/usr/bin/bash
 endif
 
 # macOS
 ifneq (,$(findstring Darwin, $(UNAME)))
-_OS=macos
-BASH_PATH=/bin/bash
+_OS:=macos
+BASH_PATH:=/bin/bash
 endif
 
 # Docker
 ifneq ("$(wildcard /.dockerenv)","")
-BASH_PATH=/bin/bash
+BASH_PATH:=/bin/bash
 endif
 
 
@@ -33,22 +33,20 @@ endif
 ifneq (${CI},true)
 # Local
 
-# Global dotent .env
+# Global dotenv
 ifneq ("$(wildcard .env)","")
 include .env
 endif
 
-# Stage/Environment dotenv .env
-ifneq ("$(wildcard .env.${STAGE})","")
+# Stage/Environment dotenv
 include .env.${STAGE}
-endif
 
 else # (${CI},true)
 # CI=true
-BASH_PATH=/usr/bin/bash
+BASH_PATH:=/usr/bin/bash
 endif # (${CI},true)
 
-SHELL=${BASH_PATH}
+SHELL:=${BASH_PATH}
 
 
 # Generic Variables
@@ -167,7 +165,6 @@ infra-prepare-backend: validate # Create Terraform backend S3Bucket and DynamoDB
 		cat ${TERRAFORM_BACKEND_STACK_LOG_PATH} ;\
 	fi
 
-
 # terraform providers lock - is very important, it generates a lock file to all platforms
 infra-init: validate validate-TERRAFORM_LIVE_DIR validate-TERRAFORM_BACKENDTPL_PATH validate-TERRAFORM_BINARY ## Prepare for creating a plan with terraform (init)
 	@cd $(TERRAFORM_LIVE_DIR) && \
@@ -231,7 +228,13 @@ ifeq (${MAKECMDGOALS},ci-set-outputs)
 S3_PUBLIC_ENDPOINT_URL:="$(shell $(MAKE) infra-print-outputs EXTRA_ARGS=s3_bucket_url)"
 endif
 ci-set-outputs: validate-S3_PUBLIC_ENDPOINT_URL
-	make --version
-	echo ""
 	@echo "S3_PUBLIC_ENDPOINT_URL = ${S3_PUBLIC_ENDPOINT_URL}" && \
-	echo ::set-output name=S3_PUBLIC_ENDPOINT_URL::${S3_PUBLIC_ENDPOINT_URL}
+	echo ::set-output name=s3_public_endpoint_url::${S3_PUBLIC_ENDPOINT_URL}
+
+docker-build-builder: ## Docker build Builder image
+	docker build --build-arg TERRAFORM_VERSION=${TERRAFORM_VERSION} -t tfmultienv:builder .
+
+docker-run-builder: ## Docker run Builder image for local debugging
+	docker run -e STAGE=dev --rm -it \
+		-v ${PWD}/.terraform.d/plugin-cache:/root/.terraform.d/plugin-cache \
+		-v ${PWD}:/code --workdir /code tfmultienv:builder

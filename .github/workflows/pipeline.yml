@@ -2,17 +2,35 @@ name: Pipeline
 
 on:
   push: # includes merge event; deploys only on live branches (dev, stg, prd)
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: Select the plan according to a Run ID, for example 2683136767
+        required: true
+      deployment_environment:
+        description: Deploy (apply) the plan on a live environment
+        type: choice
+        options:
+          - dev
+          - stg
+          - prd
+        required: true
+      action:
+        description: Which action to take, plan or apply
+        type: choice
+        options:
+          - plan
+          - apply
+        default: plan
+        required: true
 
 env:
   ### ---------------------------------------------------------------
-  APP_NAME: tfmultienv-example
-  AWS_REGION: eu-west-1
   CACHE_TERRAFORM_VERSION: "6" ### Switch the number to purge cache
-  TERRAFORM_VERSION: 1.2.5
-  GIT_COMMIT: ${{ github.sha }}
-  GIT_BRANCH: ${{ github.base_ref }} # For PRs only
-  GIT_BUILD_NUMBER: ${{ github.run_id }}
-  TERRAFORM_LIVE_DIR: live
+  APP_NAME: tfmultienv-example # MODIFY THIS VALUE
+  AWS_REGION: eu-west-1 # MODIFY THIS VALUE
+  TERRAFORM_VERSION: 1.2.5 # MODIFY THIS VALUE
+  TERRAFORM_LIVE_DIR: live # Used in this pipeline's context ${{ env.TERRAFORM_LIVE_DIR }}
   ### ---------------------------------------------------------------
 
 jobs:
@@ -20,7 +38,7 @@ jobs:
     name: Prepare
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Inject slug/short variables
         uses: rlespinasse/github-slug-action@v3.x
       - name: Print Outputs
@@ -42,15 +60,12 @@ jobs:
         id: dynamic-outputs
         run: |
           echo "github.event.pull_request.head.sha = ${{ github.event.pull_request.head.sha }}"
-          GIT_BRANCH="${GITHUB_HEAD_REF:-$GITHUB_REF_SLUG}"
           echo "::set-output name=GIT_SHORT_COMMIT::${GITHUB_SHA:0:8}"
-          echo "::set-output name=GIT_BRANCH::${GIT_BRANCH}"
           echo "::set-output name=DEPLOYMENT_ENVIRONMENT::${DEPLOYMENT_ENVIRONMENT}"
           [[ ${{ steps.export-configmap.outputs.CONFIGMAP_SELECTED_KEY }} != "default" && $GITHUB_EVENT_NAME == "push" ]] && IS_DEPLOY=true || IS_DEPLOY=false
           echo "::set-output name=IS_DEPLOY::${IS_DEPLOY}"
           echo "IS_DEPLOY=${IS_DEPLOY}"
     outputs:
-      GIT_BRANCH: ${{ steps.dynamic-outputs.outputs.git_branch }}
       DEPLOYMENT_ENVIRONMENT: ${{ steps.dynamic-outputs.outputs.deployment_environment }}
       CONFIGMAP: ${{ steps.export-configmap.outputs.CONFIGMAP_MAP }}
       GIT_COMMIT: ${{ steps.dynamic-outputs.outputs.GIT_SHORT_COMMIT }}

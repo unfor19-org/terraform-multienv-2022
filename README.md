@@ -25,7 +25,6 @@ A template for maintaining a multiple environments infrastructure with [Terrafor
 
 - Branches names are aligned with environments names, for example `dev`, `stg` and `prd`
 - The directory `./live` contains infrastructure-as-code files - `*.tf`, `*.tpl`, `*.json`
-
 - Multiple Environments
 
   - All environments are maintained in the same git repository
@@ -33,8 +32,8 @@ A template for maintaining a multiple environments infrastructure with [Terrafor
 
 - Variables
 
-  - \${app_name} = `tfmultienv-example`
-  - \${environment} = `dev` or `stg` or `prd`
+  - `APP_NAME` = `tfmultienv-example`
+  - `STAGE` valid values = `dev` or `stg` or `prd`
 
 ## Getting Started
 
@@ -75,24 +74,40 @@ A template for maintaining a multiple environments infrastructure with [Terrafor
    - The URL of the deployed static S3 website is available in the `terraform-apply` logs, for example:
      1. `s3_bucket_url = terraform-20220715150221173100000001.s3-website-eu-west-1.amazonaws.com/`
      2. Check this repo's `dev` deployment final results - [terraform-20220715150221173100000001.s3-website-eu-west-1.amazonaws.com/](http://terraform-20220715150221173100000001.s3-website-eu-west-1.amazonaws.com/)
-
-5. Create `stg` branch
-
+5. After running a successful workflow, add the following branch rules per live environment:
+     - Pattern `dev` or `stg` or `prd`
+     - Select **Require a pull request before merging**
+     - Select **Require status checks to pass before merging**
+       - Select **Require branches to be up to date before merging**
+       - For `dev`
+         - Search for Status Check:
+           - `Infra Plan - dev`
+       - For `stg`
+         - Search for Status Check: 
+           - `Infra Apply - dev`
+           - `Infra Plan - stg`
+               - For `stg`:
+       - For `prd`
+         - Search for Status Check: 
+           - `Infra Apply - stg`
+           - `Infra Plan - prd`
+     - **Save changes**
+6. Create `stg` branch
    ```
    git checkout dev
    git checkout -b stg
    git push --set-upstream origin stg
    ```
 
-6. GitHub > Promote `dev` environment to `stg`
+7. GitHub > Promote `dev` environment to `stg`
 
    - Create a PR from `dev` to `stg`
    - The plan to `stg` is added as a comment by the [terraform-plan](https://github.com/unfor19/terraform-multienv/blob/dev/.github/workflows/terraform-plan.yml) pipeline
    - Merge the changes to `stg`, and check the [terraform-apply](https://github.com/unfor19/terraform-multienv/blob/dev/.github/workflows/terraform-apply.yml) pipeline in the Actions tab
 
-7. That's it, you've just deployed two identical environments! Go ahead and do the same with `prd`
+8. That's it, you've just deployed two identical environments! Go ahead and do the same with `prd`
 
-8. How to proceed from here
+9. How to proceed from here
    1. Plan on `dev` - commit and push to non-live branch
    2. Promote feature branches to `dev` - create a PR to plan and merge to apply
    3. Promote `dev` to `stg` - create a PR to plan and merge to apply

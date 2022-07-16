@@ -69,22 +69,7 @@ TERRAFORM_BINARY:=terraform-bin
 endif
 
 
-# Variables that depend on git
-ifndef GIT_BRANCH
-GIT_BRANCH:=$(shell git branch --show-current)
-endif
-
-GIT_BRANCH_SLUG:=$(subst /,-,$(GIT_BRANCH))
-
-ifndef GIT_BUILD_NUMBER
-GIT_BUILD_NUMBER:=99999
-endif
-
-ifndef GIT_COMMIT
-GIT_COMMIT:=$(shell git rev-parse HEAD)
-endif
-GIT_SHORT_COMMIT:=$(shell ${GIT_COMMIT:0:8})
-
+# AWS Creds
 ifeq (${AWS_PROFILE},)
 unexport AWS_PROFILE
 endif
@@ -97,7 +82,7 @@ ifeq (${AWS_SECRET_ACCESS_KEY},)
 unexport AWS_SECRET_ACCESS_KEY
 endif
 
-# Avoid opening aws-cli responses in default editor
+# AWS - Avoid opening aws-cli responses in default editor
 export AWS_PAGER=
 
 

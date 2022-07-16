@@ -2,6 +2,13 @@
 .ONESHELL:
 .EXPORT_ALL_VARIABLES:
 
+# All targets are PHONY - 
+# A phony target is one that is not really the name of a file; 
+# rather it is just a name for a recipe to be executed when you make an explicit request. 
+# There are two reasons to use a phony target: to avoid a conflict with a file of the same name, and to improve performance.
+# Source - https://www.gnu.org/software/make/manual/html_node/Phony-Targets.html
+.PHONY: all $(MAKECMDGOALS)
+
 UNAME:=$(shell uname)
 
 # Windows Git Bash

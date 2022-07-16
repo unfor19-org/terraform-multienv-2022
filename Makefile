@@ -224,5 +224,6 @@ ifeq (${MAKECMDGOALS},ci-set-outputs)
 S3_PUBLIC_ENDPOINT_URL:=$(shell $(MAKE) infra-print-outputs EXTRA_ARGS=s3_bucket_url)
 endif
 ci-set-outputs: validate-S3_PUBLIC_ENDPOINT_URL
+	echo ""
 	@echo "S3_PUBLIC_ENDPOINT_URL = ${S3_PUBLIC_ENDPOINT_URL}" && \
 	echo ::set-output name=S3_PUBLIC_ENDPOINT_URL::${S3_PUBLIC_ENDPOINT_URL}

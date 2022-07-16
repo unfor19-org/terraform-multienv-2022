@@ -2,23 +2,30 @@
 .ONESHELL:
 .EXPORT_ALL_VARIABLES:
 
+# All targets are PHONY - 
+# A phony target is one that is not really the name of a file; 
+# rather it is just a name for a recipe to be executed when you make an explicit request. 
+# There are two reasons to use a phony target: to avoid a conflict with a file of the same name, and to improve performance.
+# Source - https://www.gnu.org/software/make/manual/html_node/Phony-Targets.html
+.PHONY: all $(MAKECMDGOALS)
+
 UNAME:=$(shell uname)
 
 # Windows Git Bash
 ifneq (,$(findstring NT, $(UNAME)))
-_OS=windows
-BASH_PATH=/usr/bin/bash
+_OS:=windows
+BASH_PATH:=/usr/bin/bash
 endif
 
 # macOS
 ifneq (,$(findstring Darwin, $(UNAME)))
-_OS=macos
-BASH_PATH=/bin/bash
+_OS:=macos
+BASH_PATH:=/bin/bash
 endif
 
 # Docker
 ifneq ("$(wildcard /.dockerenv)","")
-BASH_PATH=/bin/bash
+BASH_PATH:=/bin/bash
 endif
 
 
@@ -26,22 +33,20 @@ endif
 ifneq (${CI},true)
 # Local
 
-# Global dotent .env
+# Global dotenv
 ifneq ("$(wildcard .env)","")
 include .env
 endif
 
-# Stage/Environment dotenv .env
-ifneq ("$(wildcard .env.${STAGE})","")
+# Stage/Environment dotenv
 include .env.${STAGE}
-endif
 
 else # (${CI},true)
 # CI=true
-BASH_PATH=/usr/bin/bash
+BASH_PATH:=/usr/bin/bash
 endif # (${CI},true)
 
-SHELL=${BASH_PATH}
+SHELL:=${BASH_PATH}
 
 
 # Generic Variables
@@ -56,29 +61,29 @@ TF_VAR_environment:=${STAGE}
 ifneq (${CI},true)
 # Local - Requirement - Copy the "terraform" binary to "/usr/bin/local/terraform1.2.3"
 # Enables support for running multiple Terraform versions on the same machine
-TERRAFORM_BINARY=terraform${TERRAFORM_VERSION}
+TERRAFORM_BINARY:=terraform${TERRAFORM_VERSION}
 else
 # CI=true
 # In CI, there's only one Terraform version
-TERRAFORM_BINARY=terraform
+TERRAFORM_BINARY:=terraform-bin
 endif
 
 
 # Variables that depend on git
 ifndef GIT_BRANCH
-GIT_BRANCH=$(shell git branch --show-current)
+GIT_BRANCH:=$(shell git branch --show-current)
 endif
 
-GIT_BRANCH_SLUG=$(subst /,-,$(GIT_BRANCH))
+GIT_BRANCH_SLUG:=$(subst /,-,$(GIT_BRANCH))
 
 ifndef GIT_BUILD_NUMBER
-GIT_BUILD_NUMBER=99999
+GIT_BUILD_NUMBER:=99999
 endif
 
 ifndef GIT_COMMIT
-GIT_COMMIT=$(shell git rev-parse HEAD)
+GIT_COMMIT:=$(shell git rev-parse HEAD)
 endif
-GIT_SHORT_COMMIT=$(shell ${GIT_COMMIT:0:8})
+GIT_SHORT_COMMIT:=$(shell ${GIT_COMMIT:0:8})
 
 ifeq (${AWS_PROFILE},)
 unexport AWS_PROFILE
@@ -160,7 +165,6 @@ infra-prepare-backend: validate # Create Terraform backend S3Bucket and DynamoDB
 		cat ${TERRAFORM_BACKEND_STACK_LOG_PATH} ;\
 	fi
 
-
 # terraform providers lock - is very important, it generates a lock file to all platforms
 infra-init: validate validate-TERRAFORM_LIVE_DIR validate-TERRAFORM_BACKENDTPL_PATH validate-TERRAFORM_BINARY ## Prepare for creating a plan with terraform (init)
 	@cd $(TERRAFORM_LIVE_DIR) && \
@@ -213,5 +217,24 @@ infra-apply: validate validate-TERRAFORM_LIVE_DIR validate-TERRAFORM_PLAN_PATH v
 		exit 44 ; \
 	fi
 
-infra-print-outputs: ## Print infra outputs with terraform
-	@cd $(TERRAFORM_LIVE_DIR) && terraform output ${EXTRA_ARGS}
+infra-print-outputs: validate-TERRAFORM_BINARY ## Print infra outputs with terraform
+	@cd "$(TERRAFORM_LIVE_DIR)" && ${TERRAFORM_BINARY} output ${EXTRA_ARGS}
+
+##.
+##-- CI --
+
+# A hack to set global env vars when a specific target is executed
+ifeq (${MAKECMDGOALS},ci-set-outputs)
+PUBLIC_ENDPOINT_URL:=http://$(shell $(MAKE) infra-print-outputs EXTRA_ARGS=s3_bucket_url | cut -d'"' -f2)
+endif
+ci-set-outputs: validate-PUBLIC_ENDPOINT_URL
+	echo "PUBLIC_ENDPOINT_URL = $${PUBLIC_ENDPOINT_URL}"
+	echo ::set-output name=s3_public_endpoint_url::$${PUBLIC_ENDPOINT_URL}
+
+docker-build-builder: ## Docker build Builder image
+	docker build --build-arg TERRAFORM_VERSION=${TERRAFORM_VERSION} -t tfmultienv:builder .
+
+docker-run-builder: ## Docker run Builder image for local debugging
+	docker run -e STAGE=dev --rm -it \
+		-v ${PWD}/.terraform.d/plugin-cache:/root/.terraform.d/plugin-cache \
+		-v ${PWD}:/code --workdir /code tfmultienv:builder

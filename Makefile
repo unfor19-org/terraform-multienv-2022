@@ -214,7 +214,7 @@ infra-apply: validate validate-TERRAFORM_LIVE_DIR validate-TERRAFORM_PLAN_PATH v
 	fi
 
 infra-print-outputs: validate-TERRAFORM_BINARY ## Print infra outputs with terraform
-	@cd $(TERRAFORM_LIVE_DIR) && ${TERRAFORM_BINARY} output ${EXTRA_ARGS}
+	@cd "$(TERRAFORM_LIVE_DIR)" && ${TERRAFORM_BINARY} output ${EXTRA_ARGS}
 
 ##.
 ##-- CI --
@@ -224,6 +224,7 @@ ifeq (${MAKECMDGOALS},ci-set-outputs)
 S3_PUBLIC_ENDPOINT_URL:="$(shell $(MAKE) infra-print-outputs EXTRA_ARGS=s3_bucket_url)"
 endif
 ci-set-outputs: validate-S3_PUBLIC_ENDPOINT_URL
+	make --version
 	echo ""
 	@echo "S3_PUBLIC_ENDPOINT_URL = ${S3_PUBLIC_ENDPOINT_URL}" && \
 	echo ::set-output name=S3_PUBLIC_ENDPOINT_URL::${S3_PUBLIC_ENDPOINT_URL}

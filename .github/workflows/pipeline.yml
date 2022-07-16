@@ -39,6 +39,7 @@ env:
   AWS_REGION: eu-west-1 # MODIFY THIS VALUE
   TERRAFORM_VERSION: 1.2.5 # MODIFY THIS VALUE
   TERRAFORM_LIVE_DIR: live # Used in this pipeline's context ${{ env.TERRAFORM_LIVE_DIR }}
+  SKIP_PREPARE_BACKEND: "true" # Set to "false" if you wish to create the Terraform backend with CI
   ### ---------------------------------------------------------------
 
 jobs:
@@ -112,6 +113,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-${{ env.APP_NAME }}-terraform-${{ env.TERRAFORM_VERSION }}-infra-${{ env.CACHE_TERRAFORM_VERSION }}
       - name: Infra Prepare Terraform Backend
+        if: ${{ env.SKIP_PREPARE_BACKEND != 'true' }}
         # Creates a terraform backend with CloudFormation
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets[env.DEPLOY_AWS_ACCESS_KEY_ID_NAME] }}

@@ -223,6 +223,6 @@ infra-print-outputs: validate-TERRAFORM_BINARY ## Print infra outputs with terra
 ifeq (${MAKECMDGOALS},ci-set-outputs)
 S3_PUBLIC_ENDPOINT_URL:=$(shell make infra-print-outputs EXTRA_ARGS=s3_bucket_url | cut -f2 -d'"')
 endif
-ci-set-outputs: validate-TERRAFORM_BINARY validate-S3_PUBLIC_ENDPOINT_URL
-	echo "S3_PUBLIC_ENDPOINT_URL = ${S3_PUBLIC_ENDPOINT_URL}" && \
-	echo "::set-output name=S3_PUBLIC_ENDPOINT_URL::${S3_PUBLIC_ENDPOINT_URL}"
+ci-set-outputs: validate-S3_PUBLIC_ENDPOINT_URL
+	echo "S3_PUBLIC_ENDPOINT_URL = $${S3_PUBLIC_ENDPOINT_URL}" && \
+	echo "::set-output name=S3_PUBLIC_ENDPOINT_URL::$${S3_PUBLIC_ENDPOINT_URL}"

@@ -221,8 +221,8 @@ infra-print-outputs: validate-TERRAFORM_BINARY ## Print infra outputs with terra
 
 # A hack to set global env vars when a specific target is executed
 ifeq (${MAKECMDGOALS},ci-set-outputs)
-S3_PUBLIC_ENDPOINT_URL:=$(shell $(MAKE) infra-print-outputs EXTRA_ARGS=s3_bucket_url | cut -f2 -d'"')
+S3_PUBLIC_ENDPOINT_URL:=$(shell $(MAKE) infra-print-outputs EXTRA_ARGS=s3_bucket_url)
 endif
 ci-set-outputs: validate-S3_PUBLIC_ENDPOINT_URL
-	@echo "S3_PUBLIC_ENDPOINT_URL = $${S3_PUBLIC_ENDPOINT_URL}" && \
-	echo "::set-output name=S3_PUBLIC_ENDPOINT_URL::$${S3_PUBLIC_ENDPOINT_URL}"
+	@echo "S3_PUBLIC_ENDPOINT_URL = ${S3_PUBLIC_ENDPOINT_URL}" && \
+	echo ::set-output name=S3_PUBLIC_ENDPOINT_URL::${S3_PUBLIC_ENDPOINT_URL}

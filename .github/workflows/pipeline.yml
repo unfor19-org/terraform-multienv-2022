@@ -83,7 +83,6 @@ jobs:
       matrix:
         configmap: ${{ fromJSON(needs.prepare.outputs.CONFIGMAP) }}
     env:
-      GIT_BRANCH: ${{ needs.prepare.outputs.configmap.GIT_BRANCH }}
       STAGE: ${{ matrix.configmap.STAGE }}
       DEPLOY_AWS_ACCESS_KEY_ID_NAME: ${{ matrix.configmap.DEPLOY_AWS_ACCESS_KEY_ID_NAME }}
       DEPLOY_AWS_SECRET_ACCESS_KEY_NAME: ${{ matrix.configmap.DEPLOY_AWS_SECRET_ACCESS_KEY_NAME }}
@@ -123,6 +122,8 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets[env.DEPLOY_AWS_ACCESS_KEY_ID_NAME] }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets[env.DEPLOY_AWS_SECRET_ACCESS_KEY_NAME] }}
         run: make infra-plan
+      - name: Set CI Plan Logs
+        run: make ci-set-logs-plan
       - name: Upload Terraform Plan As Artifact
         uses: actions/upload-artifact@v3
         with:

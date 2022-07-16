@@ -170,7 +170,9 @@ infra-plan: validate validate-TERRAFORM_PLAN_PATH validate-TERRAFORM_PLAN_LOG_PA
 	cd $(TERRAFORM_LIVE_DIR) && ${TERRAFORM_BINARY} plan -out "${TERRAFORM_PLAN_PATH}" | tee ${TERRAFORM_PLAN_LOG_PATH}
 	@if grep 'found no differences, so no changes are needed' ${TERRAFORM_PLAN_LOG_PATH} ; then \
 		[[ -f ${TERRAFORM_PLAN_PATH} ]] && rm ${TERRAFORM_PLAN_PATH} ; \
-		[[ "${CI}" = "true" ]] && echo "::warning file=Makefile:: Skipped infra-plan" ; \
+		if [[ "${CI}" = "true" ]] ; then \
+			echo "::warning file=Makefile:: Skipped infra-plan" ; \
+		fi ; \
 		exit 0 ; \
 	else \
 		exit 0 ; \
@@ -216,8 +218,16 @@ ci-set-outputs: validate-PUBLIC_ENDPOINT_URL
 	echo "PUBLIC_ENDPOINT_URL = $${PUBLIC_ENDPOINT_URL}"
 	echo ::set-output name=s3_public_endpoint_url::$${PUBLIC_ENDPOINT_URL}
 
+
+ci-set-logs-plan: validate-TERRAFORM_PLAN_LOG_PATH
+	@echo "::group::Plan Logs"
+	@cat ${TERRAFORM_PLAN_LOG_PATH}
+	@echo "::endgroup::"
+
+
 docker-build-builder: ## Docker build Builder image
 	docker build --build-arg TERRAFORM_VERSION=${TERRAFORM_VERSION} -t tfmultienv:builder .
+
 
 docker-run-builder: ## Docker run Builder image for local debugging
 	docker run -e STAGE=dev --rm -it \

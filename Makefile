@@ -83,7 +83,7 @@ unexport AWS_SECRET_ACCESS_KEY
 endif
 
 ifndef GITHUB_STEP_SUMMARY
-GITHUB_STEP_SUMMARY=${ROOT_DIR}/.github_summary.log
+GITHUB_STEP_SUMMARY=${ROOT_DIR}/.github_summary.md
 endif
 
 # AWS - Avoid opening aws-cli responses in default editor
@@ -227,8 +227,8 @@ ci-set-logs-plan: validate-TERRAFORM_PLAN_LOG_PATH
 	@echo "::group::Plan Logs"
 	@cat ${TERRAFORM_PLAN_LOG_PATH}
 	@echo "::endgroup::"
-	echo \`\`\` >> ${GITHUB_STEP_SUMMARY}
-	cat ${TERRAFORM_PLAN_LOG_PATH} >> ${GITHUB_STEP_SUMMARY}
+	echo \`\`\`diff > ${GITHUB_STEP_SUMMARY}
+	cat ${TERRAFORM_PLAN_LOG_PATH} | sed -e 's/\x1b\[[0-9;]*m//g' | sed 's~^  ~~g' >> ${GITHUB_STEP_SUMMARY}
 	echo \`\`\` >> ${GITHUB_STEP_SUMMARY}
 
 docker-build-builder: ## Docker build Builder image

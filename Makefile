@@ -82,6 +82,10 @@ ifeq (${AWS_SECRET_ACCESS_KEY},)
 unexport AWS_SECRET_ACCESS_KEY
 endif
 
+ifndef GITHUB_STEP_SUMMARY
+GITHUB_STEP_SUMMARY=${ROOT_DIR}/.github_summary.log
+endif
+
 # AWS - Avoid opening aws-cli responses in default editor
 export AWS_PAGER=
 
@@ -223,7 +227,9 @@ ci-set-logs-plan: validate-TERRAFORM_PLAN_LOG_PATH
 	@echo "::group::Plan Logs"
 	@cat ${TERRAFORM_PLAN_LOG_PATH}
 	@echo "::endgroup::"
-
+	echo \`\`\` >> ${GITHUB_STEP_SUMMARY}
+	cat ${TERRAFORM_PLAN_LOG_PATH} >> ${GITHUB_STEP_SUMMARY}
+	echo \`\`\` >> ${GITHUB_STEP_SUMMARY}
 
 docker-build-builder: ## Docker build Builder image
 	docker build --build-arg TERRAFORM_VERSION=${TERRAFORM_VERSION} -t tfmultienv:builder .

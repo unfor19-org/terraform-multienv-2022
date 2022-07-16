@@ -228,7 +228,7 @@ ci-set-logs-plan: validate-TERRAFORM_PLAN_LOG_PATH
 	@cat ${TERRAFORM_PLAN_LOG_PATH}
 	@echo "::endgroup::"
 	echo \`\`\`diff > ${GITHUB_STEP_SUMMARY}
-	cat ${TERRAFORM_PLAN_LOG_PATH} | sed -e 's/\x1b\[[0-9;]*m//g' | sed 's~^  ~~g' >> ${GITHUB_STEP_SUMMARY}
+	cat ${TERRAFORM_PLAN_LOG_PATH} | sed -e 's/\x1b\[[0-9;]*m//g' | sed 's~^  ~~g' | sed 's/^~/🟡/g' >> ${GITHUB_STEP_SUMMARY}
 	echo \`\`\` >> ${GITHUB_STEP_SUMMARY}
 
 docker-build-builder: ## Docker build Builder image
